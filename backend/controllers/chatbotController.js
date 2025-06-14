@@ -1,4 +1,5 @@
 const axios = require('axios');
+require('dotenv').config(); 
 
 const chatbot = async (req, res) => {
   const userMessage = req.body.message;
@@ -17,10 +18,10 @@ const chatbot = async (req, res) => {
       },
       {
         headers: {
-          Authorization: 'Bearer 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',
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:3000', // optional
-          'X-Title': 'FitnessChatbot',              // optional
+          'HTTP-Referer': 'http://localhost:3000',
+          'X-Title': 'FitnessChatbot',             
         },
       }
     );
@@ -28,7 +29,7 @@ const chatbot = async (req, res) => {
     const botReply = response.data.choices[0].message.content;
     res.json({ response: botReply });
   } catch (error) {
-    console.error('Error talking to OpenRouter:', error.response?.data || error.message);
+    console.error('OpenRouter error:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to get response from chatbot.' });
   }
 };

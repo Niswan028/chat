@@ -1,67 +1,46 @@
-const db = require('../config/db');
-const bcrypt = require('bcrypt');
+const supabase = require('../config/supabase');
 
-const saltRounds = 10;
 
 exports.signup = async (req, res) => {
   const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: 'Please fill in all fields' });
-  }
-
   try {
-    // Check if user already exists
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length > 0) {
-      return res.status(400).json({ error: 'User already exists' });
+    const { data, error } = await supabase
+      .from('login')
+      .insert([{ username, email, password }]);
+
+    if (error) {
+      console.error('Signup error:', error.message);
+      return res.status(500).json({ error: error.message });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Insert new user into DB
-    await db.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email, hashedPassword]
-    );
-
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    console.error('Signup Error:', error);
-    res.status(500).json({ error: 'Database error' });
+    res.status(201).json({ message: 'User registered', user: data });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Please fill in all fields' });
-  }
-
   try {
-    // Find user by email
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
+    const { data, error } = await supabase
+      .from('login')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
+      .single(); 
+
+    if (error || !data) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const user = rows[0];
-    const match = await bcrypt.compare(password, user.password);
 
-    if (!match) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    res.json({
-      message: 'Login successful',
-      userId: user.id,
-      username: user.username,
-      email: user.email,
-    });
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ error: 'Database error' });
+    res.status(200).json({ message: 'Login successful', user: { username: data.username, email: data.email } });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };

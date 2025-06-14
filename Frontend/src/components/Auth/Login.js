@@ -30,7 +30,7 @@ const LoginPage = () => {
       }
 
       console.log('Login success:', data);
-      navigate('/chat');
+      navigate('/chat'); // or wherever the dashboard is
     } catch (err) {
       setError('Server error. Please try again later.');
     }
@@ -42,20 +42,8 @@ const LoginPage = () => {
         <h2>Login to FitBot</h2>
         {error && <p className="auth-error">{error}</p>}
         <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            className="auth-input"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="auth-input"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
+          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="auth-input" />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="auth-input" />
           <button type="submit" className="auth-button">Login</button>
         </form>
         <p className="auth-link-text">
