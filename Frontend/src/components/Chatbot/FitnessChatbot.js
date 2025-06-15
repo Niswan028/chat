@@ -18,7 +18,7 @@ function FullChatbot() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    const response = await fetch('http://localhost:5000/api/chatbot/chat', {
+    const response = await fetch('https://chat-8qgf.onrender.com/api/chatbot/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: input })
